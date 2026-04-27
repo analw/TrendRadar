@@ -1,0 +1,1827 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>热点新闻分析</title>
+        <style>
+            * { box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                margin: 0; 
+                padding: 16px; 
+                background: #fafafa;
+                color: #333;
+                line-height: 1.5;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            }
+
+            .header {
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                color: white;
+                padding: 32px 24px;
+                text-align: center;
+            }
+
+            .header-title {
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0 0 20px 0;
+            }
+
+            .header-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                font-size: 14px;
+                opacity: 0.95;
+            }
+
+            .info-item {
+                text-align: center;
+            }
+
+            .info-label {
+                display: block;
+                font-size: 12px;
+                opacity: 0.8;
+                margin-bottom: 4px;
+            }
+
+            .info-value {
+                font-weight: 600;
+                font-size: 16px;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .word-group {
+                margin-bottom: 40px;
+            }
+
+            .word-group:first-child {
+                margin-top: 0;
+            }
+
+            .word-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .word-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .word-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .word-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .word-count.hot { color: #dc2626; font-weight: 600; }
+            .word-count.warm { color: #ea580c; font-weight: 600; }
+
+            .word-index {
+                color: #999;
+                font-size: 12px;
+            }
+
+            .news-item {
+                margin-bottom: 20px;
+                padding: 16px 0;
+                border-bottom: 1px solid #f5f5f5;
+                position: relative;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item.new::after {
+                content: "NEW";
+                position: absolute;
+                top: 12px;
+                right: 0;
+                background: #fbbf24;
+                color: #92400e;
+                font-size: 9px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .news-number {
+                color: #999;
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-start;
+                margin-top: 8px;
+            }
+
+            .news-content {
+                flex: 1;
+                min-width: 0;
+                padding-right: 40px;
+            }
+
+            .news-item.new .news-content {
+                padding-right: 50px;
+            }
+
+            .news-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            }
+
+            .source-name {
+                color: #666;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .rank-num {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 2px 6px;
+                border-radius: 10px;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            .rank-num.top { background: #dc2626; }
+            .rank-num.high { background: #ea580c; }
+
+            .time-info {
+                color: #999;
+                font-size: 11px;
+            }
+
+            .count-info {
+                color: #059669;
+                font-size: 11px;
+                font-weight: 500;
+            }
+
+            .news-title {
+                font-size: 15px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .news-link {
+                color: #2563eb;
+                text-decoration: none;
+            }
+
+            .news-link:hover {
+                text-decoration: underline;
+            }
+
+            .news-link:visited {
+                color: #7c3aed;
+            }
+
+            .new-section {
+                margin-top: 40px;
+                padding-top: 24px;
+                border-top: 2px solid #f0f0f0;
+            }
+
+            .new-section-title {
+                color: #1a1a1a;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 20px 0;
+            }
+
+            .new-source-group {
+                margin-bottom: 24px;
+            }
+
+            .new-source-title {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+                margin: 0 0 12px 0;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .new-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 0;
+                border-bottom: 1px solid #f9f9f9;
+            }
+
+            .new-item:last-child {
+                border-bottom: none;
+            }
+
+            .new-item-number {
+                color: #999;
+                font-size: 12px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .new-item-rank {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 8px;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .new-item-rank.top { background: #dc2626; }
+            .new-item-rank.high { background: #ea580c; }
+
+            .new-item-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .new-item-title {
+                font-size: 14px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .error-section {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+
+            .error-title {
+                color: #dc2626;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 8px 0;
+            }
+
+            .error-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .error-item {
+                color: #991b1b;
+                font-size: 13px;
+                padding: 2px 0;
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+
+            @media (max-width: 480px) {
+                body { padding: 12px; }
+                .header { padding: 24px 20px; }
+                .content { padding: 20px; }
+                .header-info { grid-template-columns: 1fr; gap: 12px; }
+                .news-header { gap: 6px; }
+                .news-content { padding-right: 45px; }
+                .news-item { gap: 8px; }
+                .new-item { gap: 8px; }
+                .news-number { width: 20px; height: 20px; font-size: 12px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="header-title">热点新闻分析</div>
+                <div class="header-info">
+                    <div class="info-item">
+                        <span class="info-label">报告类型</span>
+                        <span class="info-value">实时分析</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">新闻总数</span>
+                        <span class="info-value">144 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">热点新闻</span>
+                        <span class="info-value">144 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">生成时间</span>
+                        <span class="info-value">04-28 02:01</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">全部新闻</div>
+                            <div class="word-count hot">144 条</div>
+                        </div>
+                        <div class="word-index">1/1</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num top">1</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638785914.html" target="_blank" class="news-link">再也不想进演唱会内场了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num top">1</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/brila-2/launches/brila-2?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Brila</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num top">1</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24349-1-1.html" target="_blank" class="news-link">有什么有意思的爱好推荐吗</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num top">1</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36779303" target="_blank" class="news-link">巅峰猎杀</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num top">1</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7631745987393224745" target="_blank" class="news-link">Jetpack Compose 1.11 正式版发布，下一代的全新控件和样式 API，你必须知道</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num top">2</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638774814.html" target="_blank" class="news-link">地铁PK，少妇vs大妈，抓头发百试不爽</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num top">2</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/fathom?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Fathom 3.0</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num top">2</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24015-1-1.html" target="_blank" class="news-link">20 岁意味着什么</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">贴吧</span><span class="rank-num top">2</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://tieba.baidu.com/hottopic/browse/hottopic?topic_id=28353805&amp;amp;topic_name=%E6%B2%99%E7%89%B9%E4%BD%AC%E6%8F%92%E6%89%8B%E9%80%89%E4%BA%BA%2C%E9%9F%A9%E5%9B%BD%E6%8B%92%E5%87%BA%E6%88%98" target="_blank" class="news-link">沙特佬插手选人,韩国拒出战</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num top">2</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37202778" target="_blank" class="news-link">桑格豪森的渴望</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num top">2</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632998012273197094" target="_blank" class="news-link">做了 6 年前端，技术不差却拿不到 Offer？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">12</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num top">3</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638788208.html" target="_blank" class="news-link">外网热评：日本几十年苦心经营起来的完美人设 不到一周时间就被马斯克的算法摧毁殆尽了 ​​​</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">13</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num top">3</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/prodshort/launches/prodshort?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">ProdShort</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">14</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num top">3</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24038-1-1.html" target="_blank" class="news-link">求 Windows 音乐下载器，往 U 盘里下载</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">15</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">贴吧</span><span class="rank-num top">3</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://tieba.baidu.com/hottopic/browse/hottopic?topic_id=28353804&amp;amp;topic_name=%E6%A0%A1%E8%8A%B1%E8%BF%9E%E8%BD%BD15%E5%B9%B4%2C%E4%BD%9C%E8%80%85%E8%BF%98%E8%83%BD%E5%86%8D%E6%88%98" target="_blank" class="news-link">校花连载15年,作者还能再战</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">16</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num top">3</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36413501" target="_blank" class="news-link">情感价值</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">17</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num top">3</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7631938951281033225" target="_blank" class="news-link">RAG夺命10连问，你能抗住第几问？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">18</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num high">4</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638776442.html" target="_blank" class="news-link">有一说一，朱珠和李梦你会选择哪一个？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">19</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num high">4</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/velo-4/launches/velo-10?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Velo</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">20</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num high">4</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24280-1-1.html" target="_blank" class="news-link">仅有的存款该不该买个偏远地方的二手小房</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">21</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num high">4</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36832900" target="_blank" class="news-link">准备好了没2：我来了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">22</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num high">4</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632207921897472054" target="_blank" class="news-link">DeepSeek V4 首测翻车，但整体还可以！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">23</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num high">5</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638812234.html" target="_blank" class="news-link">第40秒有亮点</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">24</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num high">5</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/jupid/launches/jupid?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Jupid</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">25</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num high">5</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24194-1-1.html" target="_blank" class="news-link">最近逛论坛逛上瘾了，有没有推荐的论坛</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">26</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num high">5</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37019075" target="_blank" class="news-link">蒙特利尔，我的美人</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">27</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num high">5</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632616802066530355" target="_blank" class="news-link">长文：Claude Code 实践 Harness 工程，开发效率翻几倍</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">28</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">6</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638749385.html" target="_blank" class="news-link">想问一下，殖人觉得自己只要跪舔就能过上好日子，有科学依据吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">29</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">6</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/dune-4?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Dune</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">30</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">6</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24394-1-1.html" target="_blank" class="news-link">Linux.do 邀请码发放</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">31</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">6</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36219411" target="_blank" class="news-link">像我这样的爱情</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">32</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">6</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632776346620280851" target="_blank" class="news-link">离职字节后，北大教授泼了盆冷水：中国AI的真实差距，可能正在拉大</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">33</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">7</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638771851.html" target="_blank" class="news-link">这个游戏天赋很强吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">34</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">7</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/figma-for-agents?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Figma for Agents</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">35</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">7</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24351-1-1.html" target="_blank" class="news-link">你觉得在职场上有所谓的朋友吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">36</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">7</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/34864022" target="_blank" class="news-link">请求救援</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">37</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">7</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632982183947730970" target="_blank" class="news-link">从 Vue 3 到 Lyt.js：无痛迁移指南</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">38</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">8</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638772313.html" target="_blank" class="news-link">大部分90、00后的父母都是这样想的吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">39</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">8</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/novavoice/launches/novavoice?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">NovaVoice</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">40</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">8</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24402-1-1.html" target="_blank" class="news-link">现在这个节点要不要买房？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">41</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">8</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36909312" target="_blank" class="news-link">翠湖</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">42</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">8</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632872949415067658" target="_blank" class="news-link">告别重复劳动：一套插件让 AI 替你写代码、修Bug、做测试、上生产</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">43</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">9</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638828309.html" target="_blank" class="news-link">认识了一个全职赌狗，让我发现赌博也可以作为职业</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">44</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">9</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/offsite-2/launches/offsite-3?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Offsite</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">45</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">9</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24274-1-1.html" target="_blank" class="news-link">终于忍不住还是注册了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">46</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">9</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36697078" target="_blank" class="news-link">密探</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">47</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">9</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632776346619936787" target="_blank" class="news-link">Bun 官方将正式支持 Android，Claude Code 未来可以直接在手机上跑</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">48</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">10</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638807607.html" target="_blank" class="news-link">派出所副所长为完成查处任务，通过社会人员诱使6名未成年人吸毒，自己再将他们查获</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">49</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">10</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/claude?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Claude Code Routines</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">50</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">10</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24271-1-1.html" target="_blank" class="news-link">网盘资源搜索小程序（永久免费使用）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">51</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">10</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7633347707734114345/" target="_blank" class="news-link">迟到2分钟被取消事业单位体检资格</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">52</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">10</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36539452" target="_blank" class="news-link">拼桌</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">53</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">10</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632567246008205366" target="_blank" class="news-link">DeepSeek V4 Pro 发力了，高强度全面测试！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">54</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">11</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638763563.html" target="_blank" class="news-link">印度老鼠神庙，一个让你鸡皮疙瘩掉一地的地方</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">55</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">11</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/claude-redesigned?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Claude Code Desktop App Redesigned</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">56</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">11</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24135-1-1.html" target="_blank" class="news-link">副业集合</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">57</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">11</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37284351" target="_blank" class="news-link">局外人</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">58</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">11</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632541245160030214" target="_blank" class="news-link">前端成功转型AI全栈，我踩过的坑都替你填上了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">59</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">12</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638786573.html" target="_blank" class="news-link">在加拿大看到含这个成分的食品千万要远离，简直离谱</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">60</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">12</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/claude-opus-4-7?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Claude Opus 4.7</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">61</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">12</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24080-1-1.html" target="_blank" class="news-link">关于 “如何获得 5 升牛奶” 的最新 AI 测试</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">62</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">12</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36963690" target="_blank" class="news-link">呼啸山庄</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">63</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">12</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632354324076822582" target="_blank" class="news-link">高吞吐+免配置！腾讯云轻量的 Hermes Agent部署指南</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">64</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">13</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638779933.html" target="_blank" class="news-link">大家看看这类型视频怎么想的</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">65</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">13</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/rankai-2?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">RankAI</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">66</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">13</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24286-1-1.html" target="_blank" class="news-link">无聊！！来个成语接龙km！！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">67</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">13</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37077505" target="_blank" class="news-link">爆弹</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">68</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">13</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632183431921729586" target="_blank" class="news-link">事件循环(Event Loop)</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">69</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">14</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638805031.html" target="_blank" class="news-link">春游i7</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">70</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">14</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/producthunt?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Ask Product Hunt AI</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">71</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">14</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24392-1-1.html" target="_blank" class="news-link">我好像心动了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">72</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">14</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37474018" target="_blank" class="news-link">泥娃娃</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">73</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">14</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632183161373474842" target="_blank" class="news-link">开源「仓颉.Skill」，你现在可以蒸馏任何书！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">74</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">15</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638807647.html" target="_blank" class="news-link">为什么“产能过剩”被视为一种灾难？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">75</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">15</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/claude?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Claude Design by Anthropic Labs</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">76</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">15</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24117-1-1.html" target="_blank" class="news-link">自学中医求引导！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">77</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">15</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37227650" target="_blank" class="news-link">旅途中的日子</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">78</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">15</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632173293400932415" target="_blank" class="news-link">为什么 AI 写代码也需要说明书？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">79</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">16</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638823419.html" target="_blank" class="news-link">为什么在网上，广东人跟东北人水火不容？这两个地方的人交集也不多吧</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">80</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">16</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/notion-mcp/launches/notion-mcp?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Notion MCP</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">81</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">16</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24263-1-1.html" target="_blank" class="news-link">有什么你很想或者很喜欢的技能</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">82</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">16</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7633424718569488390/" target="_blank" class="news-link">岳云鹏自曝瘦了十几斤</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">83</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">16</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37335090" target="_blank" class="news-link">追恶</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">84</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">16</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632341519272312842" target="_blank" class="news-link">一文通透 Vue动态组件体系：插槽｜数据监听｜组件通信｜动态切换｜缓存—闭环</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">85</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">17</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638812410.html" target="_blank" class="news-link">看，这就是你要的男女平等</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">86</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">17</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/build-check-for-outsiders?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Build Check</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">87</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">17</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24234-1-1.html" target="_blank" class="news-link">打听！男生都想收到什么礼物啊？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">88</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">17</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37312482" target="_blank" class="news-link">爱上平行时空的你</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">89</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">17</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632709318668042267" target="_blank" class="news-link">从 OpenAI Agents SDK 中了解最新的 Agent 设计理念</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">90</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">18</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638832420.html" target="_blank" class="news-link">[不服来BB]辩论大赛：多地将全面禁止在公共场所吸烟，你支持吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">91</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">18</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/slapmac/launches/slapmac?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">SlapMac</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">92</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">18</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24195-1-1.html" target="_blank" class="news-link">一个长期被家里管控的人要如何从中挣脱</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">93</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">18</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7633078937048907818/" target="_blank" class="news-link">男子欠信用卡 债务被银行卖给第三方</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">94</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">18</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/36486147" target="_blank" class="news-link">总统的蛋糕</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">95</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">18</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632228821950300169" target="_blank" class="news-link">不经过服务器，两个人怎么直接通话？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">96</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">19</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638763026.html" target="_blank" class="news-link">火车软卧真的没发生过有意思的事情吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">97</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">19</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/influcio-2/launches/influcio-2?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Influcio</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">98</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">19</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24011-1-1.html" target="_blank" class="news-link">介绍的相亲对象</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">99</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">19</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7632942548772831270/" target="_blank" class="news-link">英国一基地起火 美用其展开对伊行动</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">100</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">19</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/1949654647376688229" target="_blank" class="news-link">现在几乎国内的大城市每个城市都至少有一个 CBD，但是为什么好多人还是说香港中环 CBD 是唯一顶级的?</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">101</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">19</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/30382501" target="_blank" class="news-link">浴血黑帮：不朽传奇</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">102</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">19</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632614384470704128" target="_blank" class="news-link">我的开源项目帮独立开发者和 OPC 省掉的，不只是刷信息的时间</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">103</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">20</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638822148.html" target="_blank" class="news-link">这车好白，不，这车好长，不，这……这谁熬得住啊？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">104</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">20</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/claude/launches/computer-use-in-claude-code-3?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Computer Use in Claude Code</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">105</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">20</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24186-1-1.html" target="_blank" class="news-link">龙虾养上了吗</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">106</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">20</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7633259318724722724/" target="_blank" class="news-link">公安追凶31年攻克一起命案积案</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">107</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">20</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2031496692588093832" target="_blank" class="news-link">如何评价潘粤明、王鹤棣主演的悬疑剧《黑夜告白》？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">108</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">douban</span><span class="rank-num ">20</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://movie.douban.com/subject/37049323" target="_blank" class="news-link">秒速5厘米</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">109</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">20</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632217214071783424" target="_blank" class="news-link">接入国产大模型deepseek,ClaudeCode·CodeX中转站使用教程</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">110</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">21</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638807622.html" target="_blank" class="news-link">林毅夫：中国最晚明年将迈入高收入国家行列</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">111</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">21</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24055-1-1.html" target="_blank" class="news-link">你现在更偏向及时行乐，还是延迟满足？为什么？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">112</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">21</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632291352588632104" target="_blank" class="news-link">别再写改名脚本了，一个 Vite 插件搞定压缩、校验、自动哈希命名vite-plugin-pack-orchestrator</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">113</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">22</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638748469.html" target="_blank" class="news-link">年轻可真好啊！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">114</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">22</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24081-1-1.html" target="_blank" class="news-link">每天活的好痛苦</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">115</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">22</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632576399221882932" target="_blank" class="news-link">状态管理大乱斗#03 | Provider 源码全面评析</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">116</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">23</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638768660.html" target="_blank" class="news-link">体育大学来的客人退房</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">117</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">23</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24288-1-1.html" target="_blank" class="news-link">张雪峰因心源性猝死去世，大家有什么要说的吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">118</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">23</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7633354847546769459/" target="_blank" class="news-link">胖东来饺子皮贴心标注被网友点赞</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">119</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">23</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632291352589189160" target="_blank" class="news-link">秒杀系统怎么区分真实用户和黄牛脚本？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">120</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">24</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638821358.html" target="_blank" class="news-link">白宫枪击案真是把西方政客嘴脸照的淋漓尽致</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">121</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">24</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24018-1-1.html" target="_blank" class="news-link">大家都在用什么相机</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">122</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">24</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632618487942004746" target="_blank" class="news-link">告别昂贵显卡！llama.cpp 终极指南：在你的电脑上满速运行大模型！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">123</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">25</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638748305.html" target="_blank" class="news-link">金钱的威力到底有多大？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">124</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">25</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24120-1-1.html" target="_blank" class="news-link">求电脑 Windows 版本的看书软件</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">125</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">25</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E5%B7%A1%E6%8A%A4%E9%98%9F%E8%BF%9E%E7%BB%AD%E4%B8%A4%E5%A4%A9%E9%81%87%E8%A7%81%E4%B8%89%E5%8F%AA%E9%87%8E%E7%94%9F%E5%A4%A7%E7%86%8A%E7%8C%AB" target="_blank" class="news-link">巡护队连续两天遇见三只野生大熊猫</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">126</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">25</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632593634925084681" target="_blank" class="news-link">开源Turix，你可以把任何App当Agent Skill用！比如微信..</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">127</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">26</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638777933.html" target="_blank" class="news-link">与i7的神州半岛游</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">128</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">26</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24126-1-1.html" target="_blank" class="news-link">大家现在用什么听歌？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">129</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">26</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E5%A4%96%E5%8D%96%E5%B0%8F%E5%93%A5%E7%99%BD%E5%A4%A9%E8%B7%91%E5%8D%95+%E6%99%9A%E4%B8%8A%E5%B8%AE%E6%B0%91%E8%AD%A6%E6%8A%93%E5%AB%8C%E7%8A%AF" target="_blank" class="news-link">外卖小哥白天跑单 晚上帮民警抓嫌犯</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">130</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">26</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632618487941103626" target="_blank" class="news-link">别卷Claude Code了，这才是普通人拥抱AI Coding的最短途径！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">131</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">27</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638791004.html" target="_blank" class="news-link">回旋镖之“给人民发枪！他们知道敌人是谁！”人民开枪，特朗普落荒而逃……</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">132</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">chongbuluo</span><span class="rank-num ">27</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.chongbuluo.com/thread-24086-1-1.html" target="_blank" class="news-link">想知道虫友们公司年终发了什么物资</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">133</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">27</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7633366339601350699/" target="_blank" class="news-link">新婚3天闹离婚 女方返还10万元彩礼</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">134</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">27</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E4%B9%8C%E6%80%BB%E7%BB%9F%E6%8F%90%E8%AE%AE%E7%BB%A7%E7%BB%AD%E5%BB%B6%E9%95%BF%E5%9B%BD%E5%AE%B6%E6%88%98%E6%97%B6%E7%8A%B6%E6%80%8190%E5%A4%A9" target="_blank" class="news-link">乌总统提议继续延长国家战时状态90天</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">135</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">27</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632541245160947718" target="_blank" class="news-link">栗子前端技术周刊第 126 期 - Rspack 2.0、TypeScript 7.0 Beta、Git 2.54...</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">136</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">28</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638750399.html" target="_blank" class="news-link">我至今不能理解下飞机为什么要着急下飞机</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">137</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">28</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=61%E5%B2%81%E9%95%BF%E6%B2%99%E9%98%BF%E5%A7%A8%E5%8B%87%E6%B8%A1%E9%BB%84%E6%B2%B3+%E8%8E%B7%E5%85%A8%E5%9B%BD%E7%AC%AC%E4%B8%80" target="_blank" class="news-link">61岁长沙阿姨勇渡黄河 获全国第一</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">138</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">28</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632567246008270902" target="_blank" class="news-link">在职前端 Agent 配置分享</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">139</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">29</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638826935.html" target="_blank" class="news-link">[流言板]东方甄选拒绝第二个董宇辉</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">140</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">29</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7633285262159711770/" target="_blank" class="news-link">中国海军强势“围观”美日菲军演</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">141</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">29</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7633248335969501211" target="_blank" class="news-link">告别 AI 乱改代码：OpenSpec 规范驱动开发完全指南</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">142</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">30</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/638823294.html" target="_blank" class="news-link">追觅 CEO 俞浩发文批评小红书的价值观</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">143</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">30</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7633372473370611263/" target="_blank" class="news-link">专家：朱拉尼开始斩草除根</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">144</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">30</span><span class="time-info">02时01分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7632533225882599443" target="_blank" class="news-link">谁才是地表最强 Android Agent 大模型？Google官方测评来了！</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    
