@@ -1,0 +1,957 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>热点新闻分析</title>
+        <style>
+            * { box-sizing: border-box; }
+            body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+                margin: 0; 
+                padding: 16px; 
+                background: #fafafa;
+                color: #333;
+                line-height: 1.5;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+            }
+
+            .header {
+                background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+                color: white;
+                padding: 32px 24px;
+                text-align: center;
+            }
+
+            .header-title {
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0 0 20px 0;
+            }
+
+            .header-info {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                font-size: 14px;
+                opacity: 0.95;
+            }
+
+            .info-item {
+                text-align: center;
+            }
+
+            .info-label {
+                display: block;
+                font-size: 12px;
+                opacity: 0.8;
+                margin-bottom: 4px;
+            }
+
+            .info-value {
+                font-weight: 600;
+                font-size: 16px;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .word-group {
+                margin-bottom: 40px;
+            }
+
+            .word-group:first-child {
+                margin-top: 0;
+            }
+
+            .word-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 20px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .word-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .word-name {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1a1a1a;
+            }
+
+            .word-count {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .word-count.hot { color: #dc2626; font-weight: 600; }
+            .word-count.warm { color: #ea580c; font-weight: 600; }
+
+            .word-index {
+                color: #999;
+                font-size: 12px;
+            }
+
+            .news-item {
+                margin-bottom: 20px;
+                padding: 16px 0;
+                border-bottom: 1px solid #f5f5f5;
+                position: relative;
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+
+            .news-item:last-child {
+                border-bottom: none;
+            }
+
+            .news-item.new::after {
+                content: "NEW";
+                position: absolute;
+                top: 12px;
+                right: 0;
+                background: #fbbf24;
+                color: #92400e;
+                font-size: 9px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 4px;
+                letter-spacing: 0.5px;
+            }
+
+            .news-number {
+                color: #999;
+                font-size: 13px;
+                font-weight: 600;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-self: flex-start;
+                margin-top: 8px;
+            }
+
+            .news-content {
+                flex: 1;
+                min-width: 0;
+                padding-right: 40px;
+            }
+
+            .news-item.new .news-content {
+                padding-right: 50px;
+            }
+
+            .news-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            }
+
+            .source-name {
+                color: #666;
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .rank-num {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 2px 6px;
+                border-radius: 10px;
+                min-width: 18px;
+                text-align: center;
+            }
+
+            .rank-num.top { background: #dc2626; }
+            .rank-num.high { background: #ea580c; }
+
+            .time-info {
+                color: #999;
+                font-size: 11px;
+            }
+
+            .count-info {
+                color: #059669;
+                font-size: 11px;
+                font-weight: 500;
+            }
+
+            .news-title {
+                font-size: 15px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .news-link {
+                color: #2563eb;
+                text-decoration: none;
+            }
+
+            .news-link:hover {
+                text-decoration: underline;
+            }
+
+            .news-link:visited {
+                color: #7c3aed;
+            }
+
+            .new-section {
+                margin-top: 40px;
+                padding-top: 24px;
+                border-top: 2px solid #f0f0f0;
+            }
+
+            .new-section-title {
+                color: #1a1a1a;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 20px 0;
+            }
+
+            .new-source-group {
+                margin-bottom: 24px;
+            }
+
+            .new-source-title {
+                color: #666;
+                font-size: 13px;
+                font-weight: 500;
+                margin: 0 0 12px 0;
+                padding-bottom: 6px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .new-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 8px 0;
+                border-bottom: 1px solid #f9f9f9;
+            }
+
+            .new-item:last-child {
+                border-bottom: none;
+            }
+
+            .new-item-number {
+                color: #999;
+                font-size: 12px;
+                font-weight: 600;
+                min-width: 18px;
+                text-align: center;
+                flex-shrink: 0;
+                background: #f8f9fa;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .new-item-rank {
+                color: #fff;
+                background: #6b7280;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 3px 6px;
+                border-radius: 8px;
+                min-width: 20px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .new-item-rank.top { background: #dc2626; }
+            .new-item-rank.high { background: #ea580c; }
+
+            .new-item-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .new-item-title {
+                font-size: 14px;
+                line-height: 1.4;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            .error-section {
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 24px;
+            }
+
+            .error-title {
+                color: #dc2626;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 8px 0;
+            }
+
+            .error-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .error-item {
+                color: #991b1b;
+                font-size: 13px;
+                padding: 2px 0;
+                font-family: 'SF Mono', Consolas, monospace;
+            }
+
+            @media (max-width: 480px) {
+                body { padding: 12px; }
+                .header { padding: 24px 20px; }
+                .content { padding: 20px; }
+                .header-info { grid-template-columns: 1fr; gap: 12px; }
+                .news-header { gap: 6px; }
+                .news-content { padding-right: 45px; }
+                .news-item { gap: 8px; }
+                .new-item { gap: 8px; }
+                .news-number { width: 20px; height: 20px; font-size: 12px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="header-title">热点新闻分析</div>
+                <div class="header-info">
+                    <div class="info-item">
+                        <span class="info-label">报告类型</span>
+                        <span class="info-value">实时分析</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">新闻总数</span>
+                        <span class="info-value">57 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">热点新闻</span>
+                        <span class="info-value">57 条</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">生成时间</span>
+                        <span class="info-value">05-17 16:59</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="word-group">
+                    <div class="word-header">
+                        <div class="word-info">
+                            <div class="word-name">全部新闻</div>
+                            <div class="word-count hot">57 条</div>
+                        </div>
+                        <div class="word-index">1/1</div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">1</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num top">2</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640702821804805686/" target="_blank" class="news-link">博主：日本在制造最严重的经济衰退</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">2</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num top">2</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E8%80%81%E4%BA%BA%E6%AF%8F%E6%9C%88%E8%AF%9D%E8%B4%B9500%E5%85%83+%E8%A7%A3%E7%BA%A6%E9%9C%80%E4%BB%98%E8%BF%9D%E7%BA%A6%E9%87%91" target="_blank" class="news-link">老人每月话费500元 解约需付违约金</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">3</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">凤凰网</span><span class="rank-num top">2</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://news.ifeng.com/c/8tCTSnz1sHn" target="_blank" class="news-link">国民党团：狠狠戳破民进党政治粉红泡泡</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">4</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num top">3</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640055659149541419/" target="_blank" class="news-link">我国夏油作物收获进入高峰</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">5</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num top">3</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E6%96%B0%E4%B8%80%E6%89%B9%E2%80%9C%E5%A4%AA%E7%A9%BA%E5%BF%AB%E9%80%92%E2%80%9D%E7%AD%BE%E6%94%B6" target="_blank" class="news-link">新一批“太空快递”签收</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">6</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">贴吧</span><span class="rank-num top">3</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://tieba.baidu.com/hottopic/browse/hottopic?topic_id=28354359&amp;amp;topic_name=%E5%9B%BD%E4%BA%BA%E7%94%A8%E5%8B%BA%E5%90%83%E8%A5%BF%E7%93%9C%2C%E6%97%A5%E7%BD%91%E7%9C%BC%E7%BA%A2" target="_blank" class="news-link">国人用勺吃西瓜,日网眼红</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">7</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num high">4</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640426027784749082/" target="_blank" class="news-link">樊振东被赞“前无古人”</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">8</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num high">5</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E5%9C%A8%E8%83%96%E4%B8%9C%E6%9D%A5%E5%8F%91%E7%8E%B0%E4%BB%B7%E6%A0%BC%E6%A0%87%E5%8F%8D%E8%A2%AB%E8%BF%BD%E7%9D%80%E5%A5%96200" target="_blank" class="news-link">在胖东来发现价格标反被追着奖200</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">9</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">贴吧</span><span class="rank-num high">5</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://tieba.baidu.com/hottopic/browse/hottopic?topic_id=28354358&amp;amp;topic_name=Viper%E6%8A%A5%E5%90%8D%E4%BA%9A%E8%BF%90%E4%BC%9A%2CLPL%E5%8D%B1%EF%BC%9F" target="_blank" class="news-link">Viper报名亚运会,LPL危？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">10</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">6</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640241099683954714/" target="_blank" class="news-link">氢能无辐式两轮车亮相中俄博览会</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">11</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">6</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E4%B9%A1%E6%9D%91%E7%89%88%E8%A5%BF%E6%B8%B8%E8%AE%B0%E8%B5%B0%E7%BA%A2+%E6%8A%9580%E4%B8%87%E6%94%B6%E5%85%A5%E4%BB%8510%E4%B8%87" target="_blank" class="news-link">乡村版西游记走红 投80万收入仅10万</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">12</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">6</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2038931803952636705" target="_blank" class="news-link">如何评价失德和劣迹艺人永久禁入演艺圈，但因「故意伤害致死」的刑满释放人员主演的电影可以全国公映？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">13</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">7</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E5%8D%A2%E6%98%B1%E6%99%93%E4%B8%BA%E3%80%8A%E7%BB%99%E9%98%BF%E5%AC%B7%E7%9A%84%E6%83%85%E4%B9%A6%E3%80%8B%E5%B1%8F%E6%91%84%E9%81%93%E6%AD%89" target="_blank" class="news-link">卢昱晓为《给阿嬷的情书》屏摄道歉</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">14</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">8</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640493333990965294/" target="_blank" class="news-link">你认为教育孩子什么最重要</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">15</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">8</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2038908254177206975" target="_blank" class="news-link">如何看待耿同学最新一期视频：一名疑似上海大学的中间人想要耿同学淡化其打假上海大学某院长之事？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">16</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">9</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640645610173235242/" target="_blank" class="news-link">是谁把榴莲价格“打下来”的</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">17</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">澎湃新闻</span><span class="rank-num ">9</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://m.thepaper.cn/newsDetail_forward_33190204" target="_blank" class="news-link">四川大摆荡坠亡事件调查：释放开关提前打开致事故发生，责任人被采取强制措施</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">18</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">10</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640556689611292714/" target="_blank" class="news-link">朝鲜运动员时隔近8年再次赴韩参赛</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">19</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">10</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2038901266051502596" target="_blank" class="news-link">西安电子科技大学某导师官宣跑路，个人主页三连喊「我跑了」，可能是什么情况？反映了大学教育生态什么问题？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">20</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">11</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/639326392.html" target="_blank" class="news-link">为什么韩国明明是发达国家却总是一副吃不起肉的样子？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">21</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">11</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7639671609440845843/" target="_blank" class="news-link">郭富城陪同妻子方媛回老家奔丧</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">22</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">11</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E2%80%9C%E9%9B%81%E8%8D%A1%E5%B1%B1%E9%A3%9E%E6%8B%89%E8%BE%BE%E7%9D%80%E7%81%AB%E2%80%9D%E7%B3%BB%E9%80%A0%E5%81%87%E5%BC%95%E6%B5%81" target="_blank" class="news-link">“雁荡山飞拉达着火”系造假引流</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">23</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">澎湃新闻</span><span class="rank-num ">11</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://m.thepaper.cn/newsDetail_forward_33188642" target="_blank" class="news-link">三星电子会长李在镕公开道歉，呼吁工会重返谈判桌</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">24</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">12</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/639329819.html" target="_blank" class="news-link">越来越离谱了？杀人犯也能演主角了？为何全国网友都在激烈抵制举报一部国外获得大奖的国产电影？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">25</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">澎湃新闻</span><span class="rank-num ">12</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://m.thepaper.cn/newsDetail_forward_33186880" target="_blank" class="news-link">白银价格“过山车”：强势七连涨后大跳水，何时重回巅峰？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">26</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">财联社热门</span><span class="rank-num ">12</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.cls.cn/detail/2373307" target="_blank" class="news-link">“福特”号航母返回美国，部署时长达326天</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">27</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">12</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2038334795621586162" target="_blank" class="news-link">2026 世界杯决赛首次增设中场秀，预计远超 15 分钟，如何看待此举？会影响球员表现与比赛节奏吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">28</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">澎湃新闻</span><span class="rank-num ">13</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://m.thepaper.cn/newsDetail_forward_33172527" target="_blank" class="news-link">博闻丨烟台庞家沟一管道被曝排出“牛奶水”，环保局否认企业偷排</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">29</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">14</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640050555227357235/" target="_blank" class="news-link">张雪机车冠军车型首次登陆中国香港</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">30</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">14</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E5%9B%9B%E4%B8%AA%E5%93%81%E7%89%8C%E4%BA%94%E6%AC%BE%E4%BA%A7%E5%93%81%E9%83%BD%E8%87%AA%E7%A7%B0%E9%94%80%E9%87%8F%E7%AC%AC%E4%B8%80" target="_blank" class="news-link">四个品牌五款产品都自称销量第一</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">31</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">15</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640180082216632366/" target="_blank" class="news-link">霍启刚郭晶晶现身何超蕸追悼会</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">32</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">16</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E8%80%81%E4%BA%BA%E5%85%AC%E4%BA%A4%E4%B8%8A%E5%8E%BB%E4%B8%96+%E6%95%91%E5%8A%A9%E6%96%B9%E8%A2%AB%E7%B4%A2%E8%B5%94%E9%80%BE11%E4%B8%87" target="_blank" class="news-link">老人公交上去世 救助方被索赔逾11万</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">33</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">17</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2037503645323892318" target="_blank" class="news-link">儿童服务站的孩子们问了很多「天真」却并不简单的问题，你愿意认真回答几个吗？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">34</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">18</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640289740445319210/" target="_blank" class="news-link">82岁爷爷丝滑跨栏惊艳全场</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">35</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">19</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640166030149795882/" target="_blank" class="news-link">演员朱媛媛去世一周年</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">36</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">19</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/1994950696" target="_blank" class="news-link">人老了，如果老伴不在了，子女也不管，该怎么办？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">37</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">producthunt</span><span class="rank-num ">20</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.producthunt.com/products/naptick-ai-sleep-companion?utm_campaign=producthunt-api&amp;utm_medium=api-v2&amp;utm_source=Application%3A+newsnow+%28ID%3A+239216%29" target="_blank" class="news-link">Naptick AI</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">38</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">20</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640014868133969930/" target="_blank" class="news-link">林心如劝霍建华做医美被拒</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">39</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">知乎</span><span class="rank-num ">20</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.zhihu.com/question/2038931761447564255" target="_blank" class="news-link">商业航天概念股巨力索具遭证监会立案，涉嫌信披误导性陈述，过去半年股价涨 3 倍，哪些信息值得关注？</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">40</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">21</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640743803095207451/" target="_blank" class="news-link">卢昱晓为《给阿嬷的情书》屏摄道歉</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">41</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">22</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640644989001842724/" target="_blank" class="news-link">北京榴莲价格下跌40%</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">42</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">23</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E6%B3%B0%E5%85%B0%E5%B0%BC%E6%96%AF%E4%BB%A3%E5%B7%A5%E5%8E%82%EF%BC%9A%E5%81%9A%E4%B8%80%E5%8F%8C%E9%9E%8B%E5%8F%AA%E8%B5%9A%E5%87%A0%E5%9D%97%E9%92%B1" target="_blank" class="news-link">泰兰尼斯代工厂：做一双鞋只赚几块钱</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">43</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">23</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7639270931059867694" target="_blank" class="news-link">React Observer Hooks：7 种监听 DOM 而不写样板代码的方式</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">44</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">25</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7639615693493633050/" target="_blank" class="news-link">哈登“虾跳”引热议</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">45</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">26</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/639288159.html" target="_blank" class="news-link">男子下车抽烟，列车提示好几遍要关门了 ，男子就是没当回事，烟抽完了车门也关了，这下着急了</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">46</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">26</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7639520124412477486/" target="_blank" class="news-link">高考倒计时21天</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">47</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">26</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7639583528113537051" target="_blank" class="news-link">用 Claude Code Agents 与 CI/CD 搭建自动化研发团队（Part 3）</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">48</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">27</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640374890444980260/" target="_blank" class="news-link">菲律宾军方称打死5名反政府武装人员</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">49</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">27</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7639644871033602099" target="_blank" class="news-link">Compose 动画 — 显隐的艺术</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">50</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">28</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7639581782937321514/" target="_blank" class="news-link">NBA赛场播放文班亚马少林寺修行短片</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">51</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">28</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7640008164921114634" target="_blank" class="news-link">我用 Cursor 三天从零到可上线：uni-app + Fastify 全栈小程序复盘</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">52</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">hupu</span><span class="rank-num ">29</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://bbs.hupu.com/639273893.html" target="_blank" class="news-link">马卉真的是富有且慷慨！</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">53</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">今日头条</span><span class="rank-num ">29</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.toutiao.com/trending/7640417850984762889/" target="_blank" class="news-link">30年期美债收益率破5%意味着什么</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">54</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">29</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E5%A5%B3%E5%AD%90%E8%AF%95%E7%AE%A17%E5%B9%B4%E5%BE%97%E5%AD%90+%E4%B8%88%E5%A4%AB%E8%82%BA%E7%99%8C%E8%84%91%E8%BD%AC%E7%A7%BB" target="_blank" class="news-link">女子试管7年得子 丈夫肺癌脑转移</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">55</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">29</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7639627678544166938" target="_blank" class="news-link">测试妹子让我写单测，我偷偷用AI一天干完一周的活</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">56</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">华尔街见闻</span><span class="rank-num ">30</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://www.baidu.com/s?wd=%E5%8C%97%E4%BA%AC%E9%9B%A8%E4%B8%8B%E4%BA%86%E4%B8%80%E5%A4%9C%E8%BF%98%E5%BE%97%E5%86%8D%E4%B8%8B%E4%B8%80%E5%A4%A9" target="_blank" class="news-link">北京雨下了一夜还得再下一天</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="news-item new">
+                        <div class="news-number">57</div>
+                        <div class="news-content">
+                            <div class="news-header">
+                                <span class="source-name">juejin</span><span class="rank-num ">30</span><span class="time-info">16时59分</span>
+                            </div>
+                            <div class="news-title"><a href="https://juejin.cn/post/7639624625789878287" target="_blank" class="news-link">手写 Zustand：三十分钟带你搞懂状态管理库的核心原理</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    
